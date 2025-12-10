@@ -32,19 +32,16 @@ public class Main {
     public static void main(String[] args) {
         Connect4 game = new Connect4();
 
-        // Játékos ('P') lépése a 3. oszlopba
         boolean sikeresLepes = game.korongLetesz(3, 'P');
 
         if (sikeresLepes) {
             System.out.println("Sikeres lépés!");
         }
 
-        // Ellenőrzés, hogy nyert-e a játékos
         if (game.ellenorizNyeres('P')) {
             System.out.println("A játékos nyert!");
         }
         
-        // Tábla állapotának lekérése
         char[][] tabla = game.getTabla();
     }
 }
