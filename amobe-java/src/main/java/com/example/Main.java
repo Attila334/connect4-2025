@@ -100,6 +100,26 @@ class Connect4 {
 }
 
 class Connect4Test {
+    @Test
+    void testEllenorizNyeres_Atlos_MasikIrany() {
+        Connect4 game = new Connect4();
+        
+        game.korongLetesz(0, 'S');
+        game.korongLetesz(0, 'S');
+        game.korongLetesz(0, 'S');
+        game.korongLetesz(0, 'P');
+
+        game.korongLetesz(1, 'S');
+        game.korongLetesz(1, 'S');
+        game.korongLetesz(1, 'P');
+
+        game.korongLetesz(2, 'S');
+        game.korongLetesz(2, 'P');
+
+        game.korongLetesz(3, 'P');
+
+        assertTrue(game.ellenorizNyeres('P'));
+    }
 
     @Test
     void testTablaInicializalas() {
