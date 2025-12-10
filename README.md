@@ -1,216 +1,50 @@
-package com.example;
+# Connect 4 (Négy a sorban) - Java Implementáció
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+Ez a projekt a klasszikus **Connect 4** (Négy a sorban) játék logikájának Java nyelvű megvalósítása. A kód tartalmazza a játékszabályok kezelését, a tábla állapotának nyilvántartását, valamint egy átfogó JUnit tesztkészletet a működés ellenőrzésére.
 
-class Connect4 {
+## 📋 Funkciók
 
-    private final char[][] tabla;
-    public static final int ROWS = 6;
-    public static final int COLS = 7;
+A `Connect4` osztály a következő képességekkel rendelkezik:
+* **Játéktábla kezelése:** Szabványos 6 soros és 7 oszlopos tábla inicializálása.
+* **Korong lehelyezése:** Gravitáció szimulálása – a korong mindig az oszlop legalsó üres helyére esik.
+* **Érvényesség ellenőrzése:** Figyeli, hogy a választott oszlop létezik-e, és nincs-e tele.
+* **Győzelem ellenőrzése:** Képes detektálni a nyerést mind a négy irányban:
+    * Vízszintes
+    * Függőleges
+    * Átlós (bal fentről jobb le)
+    * Átlós (bal lentről jobb fel)
+* **Döntetlen figyelése:** Jelzi, ha a tábla betelt, de nincs nyertes.
+* **Alapvető AI:** Tartalmaz egy egyszerű gépi lépés logikát (`aiLepes`), amely megkeresi az első érvényes lépést.
 
-    public Connect4() {
-        tabla = new char[ROWS][COLS];
-        for (int i = 0; i < ROWS; i++) {
-            for (int j = 0; j < COLS; j++) {
-                tabla[i][j] = '.';
-            }
-        }
-    }
+## 🛠️ Technológia
 
-    public char[][] getTabla() {
-        return tabla;
-    }
+* **Nyelv:** Java (JDK 8 vagy újabb)
+* **Tesztelés:** JUnit 5 (Jupiter)
 
-    public boolean korongLetesz(int oszlop, char jatekos) {
-        if (oszlop < 0 || oszlop >= COLS) {
-            return false;
-        }
+## 🚀 Használat
 
-        for (int i = ROWS - 1; i >= 0; i--) {
-            if (tabla[i][oszlop] == '.') {
-                tabla[i][oszlop] = jatekos;
-                return true;
-            }
-        }
-        return false;
-    }
+A játék logikája a `com.example` csomagban található. Példa a `Connect4` osztály használatára egy Java alkalmazásban:
 
-    public boolean ellenorizNyeres(char jatekos) {
+```java
+import com.example.Connect4;
 
-        for (int i = 0; i < ROWS; i++) {
-            for (int j = 0; j < COLS - 3; j++) {
-                if (tabla[i][j] == jatekos && tabla[i][j + 1] == jatekos &&
-                        tabla[i][j + 2] == jatekos && tabla[i][j + 3] == jatekos) {
-                    return true;
-                }
-            }
-        }
-
-
-        for (int j = 0; j < COLS; j++) {
-            for (int i = 0; i < ROWS - 3; i++) {
-                if (tabla[i][j] == jatekos && tabla[i + 1][j] == jatekos &&
-                        tabla[i + 2][j] == jatekos && tabla[i + 3][j] == jatekos) {
-                    return true;
-                }
-            }
-        }
-
-
-        for (int i = 0; i < ROWS - 3; i++) {
-            for (int j = 0; j < COLS - 3; j++) {
-                if (tabla[i][j] == jatekos && tabla[i + 1][j + 1] == jatekos &&
-                        tabla[i + 2][j + 2] == jatekos && tabla[i + 3][j + 3] == jatekos) {
-                    return true;
-                }
-            }
-        }
-
-
-        for (int i = 0; i < ROWS - 3; i++) {
-            for (int j = 3; j < COLS; j++) {
-                if (tabla[i][j] == jatekos && tabla[i + 1][j - 1] == jatekos &&
-                        tabla[i + 2][j - 2] == jatekos && tabla[i + 3][j - 3] == jatekos) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    public boolean teleAVanATabla() {
-        for (int j = 0; j < COLS; j++) {
-            if (tabla[0][j] == '.') {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public int aiLepes() {
-        for (int j = 0; j < COLS; j++) {
-            if (korongLetesz(j, 'S')) {
-                return j;
-            }
-        }
-        return -1;
-    }
-}
-
-class Connect4Test {
-
-    @Test
-    void testTablaInicializalas() {
-        Connect4 game = new Connect4();
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 7; j++) {
-                assertEquals('.', game.getTabla()[i][j]);
-            }
-        }
-    }
-
-    @Test
-    void testKorongLetesz_ValidColumn() {
-        Connect4 game = new Connect4();
-        assertTrue(game.korongLetesz(0, 'P'));
-        assertTrue(game.korongLetesz(6, 'P'));
-    }
-
-    @Test
-    void testKorongLetesz_InvalidColumn() {
-        Connect4 game = new Connect4();
-        assertFalse(game.korongLetesz(-1, 'P'));
-        assertFalse(game.korongLetesz(7, 'P'));
-    }
-
-    @Test
-    void testKorongLetesz_ColumnFull() {
-        Connect4 game = new Connect4();
-        for (int i = 0; i < 6; i++) {
-            assertTrue(game.korongLetesz(0, 'P'));
-        }
-        assertFalse(game.korongLetesz(0, 'P'));
-    }
-
-    @Test
-    void testEllenorizNyeres_Vizszintes() {
-        Connect4 game = new Connect4();
-        game.korongLetesz(0, 'P');
-        game.korongLetesz(1, 'P');
-        game.korongLetesz(2, 'P');
-        game.korongLetesz(3, 'P');
-        assertTrue(game.ellenorizNyeres('P'));
-    }
-
-    @Test
-    void testEllenorizNyeres_Fuggoleges() {
-        Connect4 game = new Connect4();
-        for (int i = 0; i < 4; i++) {
-            game.korongLetesz(0, 'P');
-        }
-        assertTrue(game.ellenorizNyeres('P'));
-    }
-
-    @Test
-    void testEllenorizNyeres_Atlos() {
+public class Main {
+    public static void main(String[] args) {
         Connect4 game = new Connect4();
 
-        game.korongLetesz(0, 'P');
+        // Játékos ('P') lépése a 3. oszlopba
+        boolean sikeresLepes = game.korongLetesz(3, 'P');
 
-        game.korongLetesz(1, 'S');
-        game.korongLetesz(1, 'P');
-
-        game.korongLetesz(2, 'S');
-        game.korongLetesz(2, 'S');
-        game.korongLetesz(2, 'P');
-
-        game.korongLetesz(3, 'S');
-        game.korongLetesz(3, 'S');
-        game.korongLetesz(3, 'S');
-        game.korongLetesz(3, 'P');
-
-        assertTrue(game.ellenorizNyeres('P'));
-    }
-
-    @Test
-    void testTeleAVanATabla() {
-        Connect4 game = new Connect4();
-        for (int col = 0; col < 7; col++) {
-            for (int row = 0; row < 6; row++) {
-                game.korongLetesz(col, 'P');
-            }
+        if (sikeresLepes) {
+            System.out.println("Sikeres lépés!");
         }
-        assertTrue(game.teleAVanATabla());
-    }
 
-    @Test
-    void testAiLepes() {
-        Connect4 game = new Connect4();
-        int oszlop = game.aiLepes();
-
-        assertTrue(oszlop >= 0 && oszlop < 7);
-        assertEquals('S', game.getTabla()[5][oszlop]);
-    }
-
-    @Test
-    void testTeljesJatek() {
-        Connect4 game = new Connect4();
-
-        game.korongLetesz(0, 'P');
-        game.korongLetesz(1, 'P');
-        game.korongLetesz(2, 'P');
-        game.korongLetesz(3, 'P');
-
-        assertTrue(game.ellenorizNyeres('P'));
-
-        game = new Connect4();
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 7; j++) {
-                game.korongLetesz(j, 'S');
-            }
+        // Ellenőrzés, hogy nyert-e a játékos
+        if (game.ellenorizNyeres('P')) {
+            System.out.println("A játékos nyert!");
         }
-        assertTrue(game.teleAVanATabla());
+        
+        // Tábla állapotának lekérése
+        char[][] tabla = game.getTabla();
     }
 }
