@@ -1,236 +1,88 @@
 package com.example;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Scanner;
 
-class Connect4 {
+public class Main {
+    public static void main(String[] args) {
+        Connect4 game = new Connect4();
+        Scanner scanner = new Scanner(System.in);
+        char aktualisJatekos = 'P';
+        boolean jatekFut = true;
 
-    private final char[][] tabla;
-    public static final int ROWS = 6;
-    public static final int COLS = 7;
+        System.out.println("=== CONNECT 4 JÁTÉK ===");
+        System.out.println("Parancsok: 0-6 (lépés), save (mentés), exit (kilépés)");
 
-    public Connect4() {
-        tabla = new char[ROWS][COLS];
-        for (int i = 0; i < ROWS; i++) {
-            for (int j = 0; j < COLS; j++) {
-                tabla[i][j] = '.';
-            }
-        }
-    }
+        while (jatekFut) {
+            megjelenitTabla(game.getTabla());
 
-    public char[][] getTabla() {
-        return tabla;
-    }
+            if (aktualisJatekos == 'P') {
+                System.out.print("Te jössz (P): ");
+                String input = scanner.nextLine();
 
-    public boolean korongLetesz(int oszlop, char jatekos) {
-        if (oszlop < 0 || oszlop >= COLS) {
-            return false;
-        }
+                if (input.equalsIgnoreCase("exit")) {
+                    break;
+                }
+                
+                if (input.equalsIgnoreCase("save")) {
+                    game.jatekMentese("jatekallas.json");
+                    continue;
+                }
 
-        for (int i = ROWS - 1; i >= 0; i--) {
-            if (tabla[i][oszlop] == '.') {
-                tabla[i][oszlop] = jatekos;
-                return true;
-            }
-        }
-        return false;
-    }
+                int oszlop;
+                try {
+                    oszlop = Integer.parseInt(input);
+                    game.validalOszlop(oszlop);
+                } catch (NumberFormatException e) {
+                    System.out.println("Hiba: Kérlek számot adj meg!");
+                    continue;
+                } catch (InvalidStepException e) {
+                    System.out.println("Hiba: " + e.getMessage());
+                    continue;
+                }
 
-    public boolean ellenorizNyeres(char jatekos) {
+                if (!game.korongLetesz(oszlop, 'P')) {
+                    System.out.println("Sikertelen lépés.");
+                    continue;
+                }
 
-        for (int i = 0; i < ROWS; i++) {
-            for (int j = 0; j < COLS - 3; j++) {
-                if (tabla[i][j] == jatekos && tabla[i][j + 1] == jatekos &&
-                        tabla[i][j + 2] == jatekos && tabla[i][j + 3] == jatekos) {
-                    return true;
+            } else {
+                System.out.println("A Gép (S) gondolkodik...");
+                int gepiOszlop = game.aiLepes();
+                if (gepiOszlop == -1) {
+                    System.out.println("A gép nem tud lépni. Döntetlen?");
+                    jatekFut = false;
+                } else {
+                    System.out.println("A gép ide lépett: " + gepiOszlop);
                 }
             }
-        }
-
-
-        for (int j = 0; j < COLS; j++) {
-            for (int i = 0; i < ROWS - 3; i++) {
-                if (tabla[i][j] == jatekos && tabla[i + 1][j] == jatekos &&
-                        tabla[i + 2][j] == jatekos && tabla[i + 3][j] == jatekos) {
-                    return true;
-                }
+            
+            if (game.ellenorizNyeres(aktualisJatekos)) {
+                megjelenitTabla(game.getTabla());
+                System.out.println("GRATULÁLOK! Nyertes: " + (aktualisJatekos == 'P' ? "Játékos" : "Gép"));
+                jatekFut = false;
+            } else if (game.teleAVanATabla()) {
+                megjelenitTabla(game.getTabla());
+                System.out.println("DÖNTETLEN! A tábla megtelt.");
+                jatekFut = false;
+            }
+            
+            if (jatekFut) {
+                aktualisJatekos = (aktualisJatekos == 'P') ? 'S' : 'P';
             }
         }
+        scanner.close();
+    }
 
-
-        for (int i = 0; i < ROWS - 3; i++) {
-            for (int j = 0; j < COLS - 3; j++) {
-                if (tabla[i][j] == jatekos && tabla[i + 1][j + 1] == jatekos &&
-                        tabla[i + 2][j + 2] == jatekos && tabla[i + 3][j + 3] == jatekos) {
-                    return true;
-                }
+    private static void megjelenitTabla(char[][] tabla) {
+        System.out.println("\n 0 1 2 3 4 5 6");
+        System.out.println("---------------");
+        for (int i = 0; i < Connect4.ROWS; i++) {
+            System.out.print("|");
+            for (int j = 0; j < Connect4.COLS; j++) {
+                System.out.print(tabla[i][j] + "|");
             }
+            System.out.println();
         }
-
-
-        for (int i = 0; i < ROWS - 3; i++) {
-            for (int j = 3; j < COLS; j++) {
-                if (tabla[i][j] == jatekos && tabla[i + 1][j - 1] == jatekos &&
-                        tabla[i + 2][j - 2] == jatekos && tabla[i + 3][j - 3] == jatekos) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    public boolean teleAVanATabla() {
-        for (int j = 0; j < COLS; j++) {
-            if (tabla[0][j] == '.') {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public int aiLepes() {
-        for (int j = 0; j < COLS; j++) {
-            if (korongLetesz(j, 'S')) {
-                return j;
-            }
-        }
-        return -1;
-    }
-}
-
-class Connect4Test {
-    @Test
-    void testEllenorizNyeres_Atlos_MasikIrany() {
-        Connect4 game = new Connect4();
-        
-        game.korongLetesz(0, 'S');
-        game.korongLetesz(0, 'S');
-        game.korongLetesz(0, 'S');
-        game.korongLetesz(0, 'P');
-
-        game.korongLetesz(1, 'S');
-        game.korongLetesz(1, 'S');
-        game.korongLetesz(1, 'P');
-
-        game.korongLetesz(2, 'S');
-        game.korongLetesz(2, 'P');
-
-        game.korongLetesz(3, 'P');
-
-        assertTrue(game.ellenorizNyeres('P'));
-    }
-
-    @Test
-    void testTablaInicializalas() {
-        Connect4 game = new Connect4();
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 7; j++) {
-                assertEquals('.', game.getTabla()[i][j]);
-            }
-        }
-    }
-
-    @Test
-    void testKorongLetesz_ValidColumn() {
-        Connect4 game = new Connect4();
-        assertTrue(game.korongLetesz(0, 'P'));
-        assertTrue(game.korongLetesz(6, 'P'));
-    }
-
-    @Test
-    void testKorongLetesz_InvalidColumn() {
-        Connect4 game = new Connect4();
-        assertFalse(game.korongLetesz(-1, 'P'));
-        assertFalse(game.korongLetesz(7, 'P'));
-    }
-
-    @Test
-    void testKorongLetesz_ColumnFull() {
-        Connect4 game = new Connect4();
-        for (int i = 0; i < 6; i++) {
-            assertTrue(game.korongLetesz(0, 'P'));
-        }
-        assertFalse(game.korongLetesz(0, 'P'));
-    }
-
-    @Test
-    void testEllenorizNyeres_Vizszintes() {
-        Connect4 game = new Connect4();
-        game.korongLetesz(0, 'P');
-        game.korongLetesz(1, 'P');
-        game.korongLetesz(2, 'P');
-        game.korongLetesz(3, 'P');
-        assertTrue(game.ellenorizNyeres('P'));
-    }
-
-    @Test
-    void testEllenorizNyeres_Fuggoleges() {
-        Connect4 game = new Connect4();
-        for (int i = 0; i < 4; i++) {
-            game.korongLetesz(0, 'P');
-        }
-        assertTrue(game.ellenorizNyeres('P'));
-    }
-
-    @Test
-    void testEllenorizNyeres_Atlos() {
-        Connect4 game = new Connect4();
-
-        game.korongLetesz(0, 'P');
-
-        game.korongLetesz(1, 'S');
-        game.korongLetesz(1, 'P');
-
-        game.korongLetesz(2, 'S');
-        game.korongLetesz(2, 'S');
-        game.korongLetesz(2, 'P');
-
-        game.korongLetesz(3, 'S');
-        game.korongLetesz(3, 'S');
-        game.korongLetesz(3, 'S');
-        game.korongLetesz(3, 'P');
-
-        assertTrue(game.ellenorizNyeres('P'));
-    }
-
-    @Test
-    void testTeleAVanATabla() {
-        Connect4 game = new Connect4();
-        for (int col = 0; col < 7; col++) {
-            for (int row = 0; row < 6; row++) {
-                game.korongLetesz(col, 'P');
-            }
-        }
-        assertTrue(game.teleAVanATabla());
-    }
-
-    @Test
-    void testAiLepes() {
-        Connect4 game = new Connect4();
-        int oszlop = game.aiLepes();
-
-        assertTrue(oszlop >= 0 && oszlop < 7);
-        assertEquals('S', game.getTabla()[5][oszlop]);
-    }
-
-    @Test
-    void testTeljesJatek() {
-        Connect4 game = new Connect4();
-
-        game.korongLetesz(0, 'P');
-        game.korongLetesz(1, 'P');
-        game.korongLetesz(2, 'P');
-        game.korongLetesz(3, 'P');
-
-        assertTrue(game.ellenorizNyeres('P'));
-
-        game = new Connect4();
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 7; j++) {
-                game.korongLetesz(j, 'S');
-            }
-        }
-        assertTrue(game.teleAVanATabla());
+        System.out.println("---------------");
     }
 }
